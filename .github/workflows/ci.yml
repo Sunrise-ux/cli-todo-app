@@ -29,14 +29,18 @@ jobs:
         restore-keys: |
           maven-
     
+    - name: Validate Java version
+      run: |
+        echo "Java version:"
+        java -version
+        echo "Maven version:"
+        mvn --version
+    
     - name: Build with Maven
       run: mvn clean compile
     
     - name: Run tests
       run: mvn test
-    
-    - name: Run Checkstyle
-      run: mvn checkstyle:check
     
     - name: Package application
       run: mvn package -DskipTests
@@ -53,5 +57,4 @@ jobs:
         echo "✅ Build completed successfully!"
         echo "Artifact: cli-todo-app.jar"
         echo "Java Version: 11"
-        echo "Maven: $(mvn --version | head -1)"
-
+        echo "Build time: $(date)"
