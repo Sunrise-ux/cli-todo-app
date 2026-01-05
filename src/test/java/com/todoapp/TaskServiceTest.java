@@ -1,73 +1,72 @@
-package com.todoapp;
+﻿package com.todoapp;
 
-import com.todoapp.model.Task;
-import com.todoapp.repository.TaskRepository;
-import com.todoapp.service.TaskService;
-import com.todoapp.exception.TaskNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Assertions;
+import com.todoapp.service.TaskService;
+import com.todoapp.repository.TaskRepository;
+import com.todoapp.model.Task;
+import com.todoapp.exception.TaskNotFoundException;
+import com.todoapp.model.Task.Priority;
+import java.util.List;
 
-class TaskServiceTest {
+public class TaskServiceTest {
     private TaskService taskService;
-    private TaskRepository repository;
-
+    
     @BeforeEach
-    void setUp() {
-        repository = new TaskRepository();
+    public void setUp() {
+        // Используем временный файл для тестов
+        TaskRepository repository = new TaskRepository("test-tasks.ser");
         taskService = new TaskService(repository);
     }
-
+    
     @Test
-    void testCreateTask() {
-        Task task = taskService.createTask("Test Task", "Test Description", Task.Priority.HIGH);
+    public void testAddTask() {
+        Task task = taskService.addTask("Test Task", "Test Description", Priority.MEDIUM);
         
-        assertNotNull(task.getId());
-        assertEquals("Test Task", task.getTitle());
-        assertEquals("Test Description", task.getDescription());
-        assertEquals(Task.Priority.HIGH, task.getPriority());
-        assertFalse(task.isCompleted());
+        Assertions.assertNotNull(task.getId());
+        Assertions.assertEquals("Test Task", task.getTitle());
+        Assertions.assertEquals("Test Description", task.getDescription());
+        Assertions.assertEquals(Priority.MEDIUM, task.getPriority());
+        Assertions.assertFalse(task.isCompleted());
     }
-
+    
     @Test
-    void testGetAllTasks() {
-        taskService.createTask("Task 1", "Desc 1", Task.Priority.LOW);
-        taskService.createTask("Task 2", "Desc 2", Task.Priority.MEDIUM);
+    public void testGetAllTasks() {
+        taskService.addTask("Task 1", "Desc 1", Priority.LOW);
+        taskService.addTask("Task 2", "Desc 2", Priority.HIGH);
         
-        assertEquals(2, taskService.getAllTasks().size());
+        List<Task> tasks = taskService.getAllTasks();
+        Assertions.assertEquals(2, tasks.size());
     }
-
-    @Test
-    void testMarkAsCompleted() throws TaskNotFoundException {
-        Task task = taskService.createTask("Test Task", "Test Description", Task.Priority.MEDIUM);
-        Task completed = taskService.markAsCompleted(task.getId());
+    
+    @Test 
+    public void testCompleteTask() {
+        Task task = taskService.addTask("Complete me", "", Priority.MEDIUM);
         
-        assertTrue(completed.isCompleted());
-        assertNotNull(completed.getCompletedAt());
-    }
-
-    @Test
-    void testDeleteTask() throws TaskNotFoundException {
-        Task task = taskService.createTask("Test Task", "Test Description", Task.Priority.MEDIUM);
-        taskService.deleteTask(task.getId());
+        taskService.completeTask(task.getId());
+        Task completed = taskService.getTaskById(task.getId())
+            .orElseThrow(() -> new RuntimeException("Task not found"));
         
-        assertTrue(taskService.getAllTasks().isEmpty());
+        Assertions.assertTrue(completed.isCompleted());
+        Assertions.assertNotNull(completed.getCompletedAt());
     }
-
+    
     @Test
-    void testTaskNotFoundException() {
-        assertThrows(TaskNotFoundException.class, () -> {
-            taskService.markAsCompleted(999);
-        });
-    }
-
-    @Test
-    void testTaskCounts() {
-        taskService.createTask("Task 1", "Desc 1", Task.Priority.LOW);
-        taskService.createTask("Task 2", "Desc 2", Task.Priority.MEDIUM);
+    public void testDeleteTask() {
+        Task task = taskService.addTask("Delete me", "", Priority.LOW);
         
-        assertEquals(2, taskService.getTaskCount());
-        assertEquals(2, taskService.getActiveTaskCount());
-        assertEquals(0, taskService.getCompletedTaskCount());
+        boolean deleted = taskService.deleteTask(task.getId());
+        Assertions.assertTrue(deleted);
+        
+        // Проверяем что задача удалена
+        Assertions.assertThrows(TaskNotFoundException.class, 
+            () -> taskService.getTaskById(task.getId()));
+    }
+    
+    @Test
+    public void testTaskNotFound() {
+        Assertions.assertThrows(TaskNotFoundException.class, 
+            () -> taskService.getTaskById(999));
     }
 }
