@@ -1,0 +1,37 @@
+﻿name: Simple Build Check
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  quick-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: 📥 Get code
+      uses: actions/checkout@v4
+    
+    - name: ☕ Setup Java
+      uses: actions/setup-java@v4
+      with:
+        java-version: '8'
+    
+    - name: ✅ Quick compile check
+      run: |
+        echo "Just checking if project compiles..."
+        mvn clean compile
+        echo "Great! Project compiles successfully!"
+        
+    - name: 🎉 Final success
+      if: success()
+      run: |
+        echo "================================="
+        echo "      🎉 BUILD SUCCESSFUL! 🎉     "
+        echo "================================="
+        echo "✅ CI/CD pipeline is working!"
+        echo "✅ Project compiles correctly"
+        echo "✅ Ready for demonstration"
+        echo "================================="
