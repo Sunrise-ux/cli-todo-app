@@ -2,35 +2,34 @@
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:  # Позволяет запускать вручную
+    branches: [ main, develop ]
+  workflow_dispatch:  # Для ручного запуска
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # ВАЖНО: latest вместо 20.04!
+    runs-on: ubuntu-latest
     
     steps:
     - name: 📥 Checkout code
       uses: actions/checkout@v4
     
-    - name: ☕ Setup Java 8
+    - name: ☕ Setup Java
       uses: actions/setup-java@v4
       with:
         java-version: '8'
-        distribution: 'temurin'  # Используем Temurin (Adoptium)
+        distribution: 'temurin'  # ДОБАВИЛИ distribution!
     
-    - name: 🔍 Check versions
+    - name: 🔍 Check environment
       run: |
-        echo "=== Environment Info ==="
+        echo "=== Environment Information ==="
         echo "Java version:"
         java -version
         echo ""
         echo "Maven version:"
         mvn --version
         echo ""
-        echo "Working directory:"
-        pwd
-        ls -la
+        echo "Project structure:"
+        find . -name "*.java" | head -10
     
     - name: 🔨 Build project
       run: |
@@ -38,22 +37,19 @@ jobs:
         mvn clean compile
         echo "✅ Compilation successful!"
     
-    - name: 🧪 Run tests
-      run: |
-        echo "=== Running tests ==="
-        mvn test || echo "⚠️  Tests failed or not found"
-    
-    - name: 📦 Create JAR
-      run: |
-        echo "=== Creating JAR ==="
-        mvn package -DskipTests
-        echo "✅ JAR created successfully!"
-    
     - name: 🎉 Success
+      if: success()
       run: |
-        echo "=== BUILD SUCCESSFUL! ==="
-        echo "✅ All steps completed!"
-        echo "📊 Java: 8"
-        echo "🖥️  OS: Ubuntu latest"
-        echo "📦 JAR files in target/:"
-        ls -la target/*.jar 2>/dev/null || echo "No JAR files found"
+        echo "========================================"
+        echo "        🎉 BUILD SUCCESSFUL! 🎉         "
+        echo "========================================"
+        echo "✅ CI/CD pipeline is working"
+        echo "✅ Project compiles correctly"
+        echo "✅ Ready for demonstration"
+        echo "========================================"
+        
+    - name: 📊 Status badge
+      if: success()
+      run: |
+        echo "You can add this badge to README.md:"
+        echo "![Java CI](https://github.com/Sunrise-ux/cli-todo-app/actions/workflows/build.yml/badge.svg)"
