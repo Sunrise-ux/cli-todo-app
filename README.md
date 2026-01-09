@@ -129,4 +129,3 @@ AddCommand, ListCommand, CompleteCommand, DeleteCommand - команды
 ✅ Запуск unit-тестов
 
 ✅ Создание JAR артефакта
-<img width="857" height="480" alt="image" src="https://github.com/user-attachments/assets/85b592c5-e08f-4b6b-a290-997f6657a29c" />
